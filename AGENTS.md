@@ -77,6 +77,21 @@ Regras do fluxo:
 5. Pare e aguarde os testes manuais do usuario.
 6. So avance para o proximo passo com ordem expressa do usuario.
 
+## Documentacao de Roadmap e Validacoes
+
+Use os documentos com responsabilidades separadas:
+
+- `ROADMAP.md`: painel principal do projeto, com status, tarefas, gates, decisoes resumidas e proximos passos.
+- `docs/VALIDACOES.md`: registro detalhado de validacoes, execucoes autorizadas, comandos, resultados locais, consumo de creditos e observacoes maiores.
+- `README.md`: funcionamento atual e estavel do projeto, comandos de uso, estrutura e cuidados.
+
+Ao concluir uma etapa do roadmap:
+
+1. Atualize o status, tarefas e resumo no `ROADMAP.md`.
+2. Se houver resultado detalhado, registre em `docs/VALIDACOES.md`.
+3. No `ROADMAP.md`, aponte para a secao correspondente de `docs/VALIDACOES.md`.
+4. Nao transforme o `ROADMAP.md` em log completo de terminal ou historico repetitivo de execucoes.
+
 Exemplos de gates:
 
 - consumo de creditos de API;
@@ -105,11 +120,12 @@ Nao recrie wrappers na raiz sem motivo forte. A logica principal deve ficar nos 
 
 Fluxo executado por `python -m src.atualizar_tudo`:
 
-1. Buscar odds novas.
-2. Salvar historico de odds.
-3. Resumir odds por jogo.
-4. Gerar palpites sugeridos.
-5. Atualizar Google Sheets.
+1. Salvar jogos da Copa em `data/jogos_copa.csv`.
+2. Buscar odds novas.
+3. Salvar historico de odds.
+4. Resumir odds por jogo.
+5. Gerar palpites sugeridos.
+6. Atualizar Google Sheets.
 
 ## Boas Praticas de Edicao
 

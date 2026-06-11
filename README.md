@@ -63,7 +63,7 @@ Sport key:
 soccer_fifa_world_cup
 ```
 
-Mercado usado no MVP:
+Mercado base usado no MVP:
 
 ```text
 h2h
@@ -84,7 +84,7 @@ odds_avancadas.csv
 odds_avancadas_resumo.csv
 ```
 
-Observacao: o mercado `totals` foi testado, mas nao retornou dados para a Copa no momento da implementacao. Por isso o MVP usa apenas `h2h`.
+O fluxo base usa `h2h`. Tambem ha suporte local para odds avancadas `h2h,totals,spreads`, quando coletadas pela The Odds API.
 
 ### Google Sheets
 
@@ -145,6 +145,18 @@ AGENTS.md
 requirements.txt
 .gitignore
 ```
+
+Documentacao complementar:
+
+```text
+docs/VALIDACOES.md
+```
+
+Uso dos documentos:
+
+- `README.md`: funcionamento atual e estavel do projeto.
+- `ROADMAP.md`: status, tarefas, gates e proximos passos.
+- `docs/VALIDACOES.md`: detalhes de validacoes, execucoes autorizadas e resultados locais.
 
 O projeto nao usa wrappers Python na raiz. Os comandos devem chamar os modulos em `src/`.
 
@@ -212,6 +224,7 @@ python -m src.atualizar_tudo
 
 Esse comando:
 
+- baixa jogos da Copa;
 - baixa odds novas;
 - salva historico;
 - atualiza o resumo;
@@ -420,6 +433,26 @@ confianca_mercado
 favoritismo_movimento
 ```
 
+Colunas explicitas de previsao por componente:
+
+```text
+previsao_resultado
+previsao_placar
+previsao_gols_time_a
+previsao_gols_time_b
+previsao_gols_vencedor
+previsao_gols_perdedor
+previsao_diferenca_gols
+previsao_total_gols
+previsao_tendencia_gols
+confianca_resultado
+confianca_gols
+confianca_placar
+fonte_previsao_resultado
+fonte_previsao_gols
+fonte_previsao_placar
+```
+
 Quando `data/elo_selecoes.csv` estiver preenchido, tambem propaga campos Elo:
 
 ```text
@@ -469,11 +502,12 @@ Orquestrador principal.
 
 Roda:
 
-1. `python -m src.apis.odds_api`
-2. `python -m src.utils.historico`
-3. `python -m src.palpites.modelo resumir`
-4. `python -m src.palpites.modelo gerar`
-5. `python -m src.sheets.google_sheets`
+1. `python -m src.apis.football_data salvar`
+2. `python -m src.apis.odds_api`
+3. `python -m src.utils.historico`
+4. `python -m src.palpites.modelo resumir`
+5. `python -m src.palpites.modelo gerar`
+6. `python -m src.sheets.google_sheets`
 
 Comando principal:
 
@@ -498,7 +532,7 @@ Nesses casos, o agente deve explicar a decisao, propor opcoes e aguardar confirm
 
 ## Limitacoes Atuais
 
-O sistema ainda usa apenas odds `h2h`.
+O sistema ainda depende principalmente de odds e sinais de mercado.
 
 Ele ajuda a entender:
 
@@ -506,17 +540,23 @@ Ele ajuda a entender:
 - quem tem maior probabilidade de vencer;
 - se o jogo parece equilibrado.
 
-Ainda nao considera diretamente:
+Ja existe suporte local para:
 
-- numero esperado de gols;
+- odds `h2h`;
+- historico e movimento de odds;
+- odds avancadas `totals` e `spreads`, quando coletadas;
+- Elo local opcional via `data/elo_selecoes.csv`.
+
+Ainda nao considera automaticamente:
+
 - ambas marcam;
-- over/under;
 - estilo das selecoes;
-- ranking de forca;
-- previsoes externas;
+- lesoes;
+- escalacoes;
+- previsoes premium externas;
 - contexto esportivo.
 
-Por isso, os placares sugeridos ainda sao regras simples.
+Por isso, os placares sugeridos continuam sendo criterios auditaveis baseados nos sinais disponiveis, nao uma previsao esportiva completa.
 
 ## Cuidados de Seguranca
 
@@ -544,12 +584,11 @@ Politica atual de versionamento:
 
 Sugestoes de evolucao:
 
-1. Consolidar o projeto no Git local.
-2. Melhorar a arquitetura dos scripts em uma pasta `src/`.
-3. Melhorar a geracao de placares com fontes externas ou modelos adicionais.
-4. Criar uma aba de revisao manual com `palpite_sugerido`, `palpite_final` e `status_revisao`.
-5. Criar uma aba de pontuacao do bolao.
-6. Automatizar execucao no Windows com o Agendador de Tarefas depois que o fluxo manual estiver validado.
+1. Validar manualmente as previsoes por componente em `data/palpites_odds.csv`.
+2. Criar uma aba de revisao manual com `palpite_sugerido`, `palpite_final` e `status_revisao`.
+3. Criar avaliacao de desempenho do bolao.
+4. Avaliar novas fontes somente com gate: Betfair Exchange API, Sportmonks, Opta/Stats Perform ou scraping controlado.
+5. Automatizar execucao no Windows com o Agendador de Tarefas depois que o fluxo manual estiver validado.
 
 ## Uso Recomendado
 

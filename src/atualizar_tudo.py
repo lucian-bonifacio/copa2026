@@ -4,6 +4,7 @@ from time import perf_counter
 
 
 ETAPAS = [
+    ("Salvar jogos", ["-m", "src.apis.football_data", "salvar"]),
     ("Buscar odds", ["-m", "src.apis.odds_api"]),
     ("Salvar historico", ["-m", "src.utils.historico"]),
     ("Resumir odds", ["-m", "src.palpites.modelo", "resumir"]),

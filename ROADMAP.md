@@ -4,6 +4,13 @@ Plano de evolucao do projeto Bolao Copa do Mundo + Odds + Google Sheets.
 
 Este arquivo organiza o que ja foi feito, o que ainda falta e a ordem recomendada de execucao.
 
+Uso deste arquivo:
+
+- manter status, tarefas, gates e proximos passos;
+- registrar apenas resumo de validacoes e resultados importantes;
+- apontar detalhes maiores para `docs/VALIDACOES.md`;
+- nao usar como log completo de cada execucao operacional.
+
 ## Status Atual
 
 MVP 1 concluido:
@@ -77,7 +84,8 @@ Objetivo: manter `python -m src.atualizar_tudo` como comando unico e confiavel.
 Fluxo atual:
 
 ```text
-buscar odds
+salvar jogos
+  -> buscar odds
   -> salvar historico
   -> resumir odds
   -> gerar palpites
@@ -87,6 +95,7 @@ buscar odds
 Tarefas:
 
 - [x] Manter `src/atualizar_tudo.py` como entrada principal.
+- [x] Gerar `data/jogos_copa.csv` antes de atualizar o Google Sheets.
 - [x] Melhorar logs para mostrar claramente:
   - inicio de cada etapa;
   - fim de cada etapa;
@@ -99,9 +108,11 @@ Tarefas:
 Resultado esperado:
 
 ```text
-[1/5] Buscando odds...
+[1/6] Salvando jogos...
+[OK] Arquivo data/jogos_copa.csv criado.
+[2/6] Buscando odds...
 [OK] Odds atualizadas. Creditos restantes: 123
-[2/5] Salvando historico...
+[3/6] Salvando historico...
 [OK] Historico salvo em data/historico_odds/...
 ...
 [OK] Fluxo completo finalizado.
@@ -109,9 +120,12 @@ Resultado esperado:
 
 Implementado:
 
+- `src/atualizar_tudo.py` agora executa `python -m src.apis.football_data salvar` antes das etapas de odds.
 - `src/atualizar_tudo.py` agora mostra inicio do fluxo, etapa atual, comando executado, sucesso, erro, codigo de saida e tempo de execucao.
 - `src/apis/odds_api.py` agora mostra status da The Odds API e creditos em linhas padronizadas com prefixo `[ODDS_API]`.
 - A validacao de sintaxe foi feita com o Python da `.venv`.
+
+Detalhes: `docs/VALIDACOES.md#2-consolidar-a-automacao-atual`.
 
 ## 3. Melhorar Estrutura do Codigo
 
@@ -180,6 +194,8 @@ Validacao feita:
 .\.venv\Scripts\python.exe -m py_compile ...
 ```
 
+Detalhes: `docs/VALIDACOES.md#3-melhorar-estrutura-do-codigo`.
+
 ## 4. Criar Historico Mais Inteligente
 
 Status: concluido.
@@ -234,17 +250,11 @@ Exemplos de classificacao:
 - `mercado_estavel`
 - `odds_incompletas`
 
-Validacao feita:
+Validacao: concluida.
 
-```powershell
-.\.venv\Scripts\python.exe -m src.utils.historico
-```
+Resumo: `data/odds_historico.csv` criado, nova foto salva em `data/historico_odds/` e movimentos classificados como `mercado_estavel` na primeira validacao.
 
-Resultado local:
-
-- `data/odds_historico.csv` criado com 2462 linhas na primeira execucao.
-- Uma nova foto foi salva em `data/historico_odds/`.
-- Como a coleta atual era igual a ultima foto anterior, os movimentos ficaram como `mercado_estavel`.
+Detalhes: `docs/VALIDACOES.md#4-criar-historico-mais-inteligente`.
 
 ## 5. Melhorar Score Baseado em Odds e Mercado
 
@@ -292,12 +302,9 @@ Implementado:
 - `data/palpites_odds.csv` agora inclui `score_mercado_*`, `confianca_mercado` e `favoritismo_movimento`.
 - O criterio dos palpites passou a indicar uso de odds normalizadas e movimento de mercado.
 
-Validacao feita:
+Validacao: concluida.
 
-```powershell
-.\.venv\Scripts\python.exe -m src.palpites.modelo resumir
-.\.venv\Scripts\python.exe -m src.palpites.modelo gerar
-```
+Detalhes: `docs/VALIDACOES.md#5-melhorar-score-baseado-em-odds-e-mercado`.
 
 ### World Football Elo Ratings
 
@@ -349,55 +356,21 @@ Implementado:
 - `python -m src.apis.odds_api resumir-avancadas` resume odds avancadas em `data/odds_avancadas_resumo.csv`.
 - `src/palpites/placar.py` usa `totals` e `spreads` ja coletados para melhorar o placar sugerido.
 
-Execucao real autorizada e feita:
+Validacoes e execucoes autorizadas:
 
-- Comando executado: `python -m src.apis.odds_api mercados 3`.
-- Foram mapeados 3 eventos.
-- Custo total observado: 3 creditos, 1 por evento.
-- Creditos restantes apos o teste: 481.
-- Arquivo gerado: `data/odds_mercados.csv`.
-- Resultado: 676 linhas, 38 bookmakers e 58 mercados distintos.
-- Mercados uteis encontrados incluem `totals`, `btts`, `spreads`, `team_totals`, `draw_no_bet`, `double_chance` e mercados `lay`.
+- mapeamento de mercados para 3 eventos concluido;
+- mapeamento ampliado para 10 eventos concluido;
+- coleta de odds avancadas `h2h,totals,spreads` concluida;
+- resumo de odds avancadas concluido.
 
-Execucao ampliada autorizada e feita:
-
-- Comando executado: `python -m src.apis.odds_api mercados 10`.
-- Foram mapeados 10 eventos.
-- Custo total observado: 10 creditos, 1 por evento.
-- Creditos restantes apos o teste: 471.
-- Arquivo atualizado: `data/odds_mercados.csv`.
-- Resultado: 2105 linhas, 38 bookmakers e 58 mercados distintos.
-- Mercados com melhor cobertura: `h2h`, `h2h_3_way`, `totals`, `btts`, `alternate_totals`, `draw_no_bet`, `double_chance`, `spreads`.
+Detalhes: `docs/VALIDACOES.md#6-expandir-the-odds-api`.
 
 Gate:
 
 - Antes de consultar novos mercados ou historico pago, confirmar consumo de creditos e cobertura do plano.
 - Nao executar chamadas de alto custo sem confirmacao expressa do usuario.
 
-Proximo micro-passo recomendado:
-
-```powershell
-python -m src.apis.odds_api odds-avancadas
-python -m src.apis.odds_api resumir-avancadas
-```
-
-Antes de executar, confirmar o custo esperado. Para odds avancadas, o custo tende a depender de mercados e regioes retornados. Com `h2h,totals,spreads` e regioes `eu,uk`, o teto teorico e 6 creditos se os 3 mercados vierem nas 2 regioes.
-
-Observacao: `btts` apareceu no mapeamento por evento, mas a The Odds API rejeitou esse mercado no endpoint geral `/odds` com erro `INVALID_MARKET`. A chamada nao consumiu creditos. BTTS deve ser tratado futuramente via endpoint por evento, se fizer sentido.
-
-Execucao real de odds avancadas:
-
-- Primeira tentativa com `h2h,totals,btts,spreads` retornou erro `INVALID_MARKET` para `btts` e nao consumiu creditos.
-- Coleta ajustada para `h2h,totals,spreads` em regioes `eu,uk`.
-- Comando executado: `python -m src.apis.odds_api odds-avancadas`.
-- Custo observado: 6 creditos.
-- Creditos restantes apos a chamada: 465.
-- Arquivo gerado: `data/odds_avancadas.csv`.
-- Resultado: 9977 linhas, 72 eventos.
-- Mercados retornados: `h2h`, `totals`, `spreads`, `h2h_lay`.
-- Comando executado: `python -m src.apis.odds_api resumir-avancadas`.
-- Arquivo gerado: `data/odds_avancadas_resumo.csv`.
-- Resultado: 1060 linhas resumidas, 72 eventos.
+Observacao: `btts` apareceu no mapeamento por evento, mas a The Odds API rejeitou esse mercado no endpoint geral `/odds` com erro `INVALID_MARKET`. BTTS deve ser tratado futuramente via endpoint por evento, se fizer sentido.
 
 Uso no modelo:
 
@@ -776,6 +749,8 @@ criterio_placar
 
 ## 13. Melhorar Previsibilidade dos Componentes do Bolao
 
+Status: parcialmente concluido para previsoes por jogo.
+
 Objetivo: fazer o sistema prever, de forma auditavel, os componentes que importam para o bolao, sem misturar isso com regras externas do jogo.
 
 Componentes que o modelo deve buscar prever:
@@ -836,12 +811,21 @@ Para campeao e vice:
 
 Tarefas:
 
-- [ ] Separar previsao de resultado, gols, diferenca e placar em funcoes claras.
-- [ ] Registrar fontes usadas para cada previsao.
-- [ ] Adicionar colunas de confianca por componente.
+- [x] Separar previsao de resultado, gols, diferenca e placar em funcoes claras.
+- [x] Registrar fontes usadas para cada previsao.
+- [x] Adicionar colunas de confianca por componente.
 - [ ] Avaliar coleta de `team_totals` e BTTS por endpoint apropriado.
 - [ ] Criar estrategia para previsao de campeao e vice.
 - [ ] Validar manualmente se as previsoes fazem sentido antes de automatizar decisoes.
+
+Implementado no escopo local:
+
+- `data/palpites_odds.csv` agora recebe colunas explicitas de previsao por componente.
+- As novas colunas sao derivadas do resultado sugerido, placar sugerido, `totals`, `spreads` e sinais de mercado ja existentes.
+- O palpite principal foi preservado: `resultado_sugerido`, `placar_sugerido`, `confianca` e `criterio_placar` continuam existindo.
+- A proxima atualizacao da planilha pelo fluxo principal propagara essas colunas para `palpites_bolao`, porque a aba recebe o CSV completo.
+
+Detalhes: `docs/VALIDACOES.md#13-melhorar-previsibilidade-dos-componentes-do-bolao`.
 
 ## 14. Criar Aba de Revisao Manual
 
@@ -1000,8 +984,8 @@ Antes de agendar:
 
 Como a organizacao inicial, logs, estrutura `src/`, historico inteligente e score de mercado ja foram feitos, o proximo passo recomendado e:
 
-1. Validar manualmente os novos placares gerados com `totals` e `spreads`.
-2. Melhorar previsibilidade dos componentes do bolao.
+1. Validar manualmente as novas colunas de previsao por componente em `data/palpites_odds.csv`.
+2. Criar revisao manual na planilha, preservando campos manuais.
 3. Conectar e extrair dados da Betfair Exchange API, se houver acesso.
 4. Avaliar Sportmonks Predictions API se houver interesse em plano pago.
 5. Avaliar Opta/Stats Perform se houver acesso oficial/API.

@@ -44,6 +44,74 @@ def calcular_confianca(row):
     return "baixa"
 
 
+def calcular_confianca_gols(row):
+    tendencia_gols = row.get("tendencia_gols", "sem_totals")
+    forca_handicap = row.get("forca_handicap", "sem_spreads")
+
+    if tendencia_gols != "sem_totals" and forca_handicap != "sem_spreads":
+        return "media"
+    if tendencia_gols != "sem_totals":
+        return "media"
+    return "baixa"
+
+
+def extrair_gols_placar(placar):
+    try:
+        gols_a, gols_b = str(placar).split("x", maxsplit=1)
+        return int(gols_a), int(gols_b)
+    except (AttributeError, TypeError, ValueError):
+        return pd.NA, pd.NA
+
+
+def gols_time_a(placar):
+    gols_a, _ = extrair_gols_placar(placar)
+    return gols_a
+
+
+def gols_time_b(placar):
+    _, gols_b = extrair_gols_placar(placar)
+    return gols_b
+
+
+def gols_vencedor(row):
+    gols_a, gols_b = extrair_gols_placar(row["previsao_placar"])
+    if pd.isna(gols_a) or pd.isna(gols_b) or gols_a == gols_b:
+        return pd.NA
+    return max(gols_a, gols_b)
+
+
+def gols_perdedor(row):
+    gols_a, gols_b = extrair_gols_placar(row["previsao_placar"])
+    if pd.isna(gols_a) or pd.isna(gols_b) or gols_a == gols_b:
+        return pd.NA
+    return min(gols_a, gols_b)
+
+
+def diferenca_gols(row):
+    gols_a, gols_b = extrair_gols_placar(row["previsao_placar"])
+    if pd.isna(gols_a) or pd.isna(gols_b):
+        return pd.NA
+    return abs(gols_a - gols_b)
+
+
+def total_gols(row):
+    gols_a, gols_b = extrair_gols_placar(row["previsao_placar"])
+    if pd.isna(gols_a) or pd.isna(gols_b):
+        return pd.NA
+    return gols_a + gols_b
+
+
+def fonte_previsao_gols(row):
+    fontes = ["placar_por_regra"]
+
+    if row.get("tendencia_gols", "sem_totals") != "sem_totals":
+        fontes.append("totals")
+    if row.get("forca_handicap", "sem_spreads") != "sem_spreads":
+        fontes.append("spreads")
+
+    return "+".join(fontes)
+
+
 def calcular_confianca_mercado(row):
     maior_score = max(
         row["score_mercado_a"],
@@ -226,6 +294,20 @@ def gerar_palpites(arquivo_entrada=ODDS_RESUMO_CSV, arquivo_saida=PALPITES_ODDS_
     palpites["confianca"] = df.apply(calcular_confianca, axis=1)
     palpites["confianca_placar"] = df.apply(calcular_confianca_placar, axis=1)
     palpites["criterio_placar"] = df.apply(gerar_criterio_placar, axis=1)
+    palpites["previsao_resultado"] = palpites["resultado_sugerido"]
+    palpites["previsao_placar"] = palpites["placar_sugerido"]
+    palpites["previsao_gols_time_a"] = palpites["previsao_placar"].apply(gols_time_a)
+    palpites["previsao_gols_time_b"] = palpites["previsao_placar"].apply(gols_time_b)
+    palpites["previsao_gols_vencedor"] = palpites.apply(gols_vencedor, axis=1)
+    palpites["previsao_gols_perdedor"] = palpites.apply(gols_perdedor, axis=1)
+    palpites["previsao_diferenca_gols"] = palpites.apply(diferenca_gols, axis=1)
+    palpites["previsao_total_gols"] = palpites.apply(total_gols, axis=1)
+    palpites["previsao_tendencia_gols"] = df["tendencia_gols"]
+    palpites["confianca_resultado"] = palpites["confianca"]
+    palpites["confianca_gols"] = df.apply(calcular_confianca_gols, axis=1)
+    palpites["fonte_previsao_resultado"] = "odds_h2h_media_normalizada_movimento_mercado"
+    palpites["fonte_previsao_gols"] = df.apply(fonte_previsao_gols, axis=1)
+    palpites["fonte_previsao_placar"] = palpites["criterio_placar"]
     palpites["prob_a_media"] = df["prob_a_media"]
     palpites["prob_empate_media"] = df["prob_empate_media"]
     palpites["prob_b_media"] = df["prob_b_media"]
