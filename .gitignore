@@ -1,0 +1,15 @@
+.env
+service_account.json
+
+.venv/
+__pycache__/
+*.py[cod]
+
+.pytest_cache/
+*.log
+
+# Arquivos gerados pelo fluxo local
+*.csv
+historico_odds/
+data/*.csv
+data/historico_odds/
