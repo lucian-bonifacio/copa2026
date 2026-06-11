@@ -29,16 +29,17 @@ MVP 1 concluido:
 4. Melhorar historico de odds.
 5. Melhorar score baseado em odds e movimento de mercado.
 6. Expandir The Odds API.
-7. Analisar mercado exchange.
+7. Conectar e extrair dados de mercado exchange.
 8. Avaliar Sportmonks Predictions API.
 9. Avaliar Opta/Stats Perform.
 10. Avaliar scraping controlado, como Forebet.
 11. Melhorar modelo de palpite.
 12. Melhorar placar sugerido.
-13. Criar revisao manual na planilha.
-14. Formatar Google Sheets automaticamente.
-15. Criar pontuacao do bolao.
-16. Automatizar no Windows.
+13. Melhorar previsibilidade dos componentes do bolao.
+14. Criar revisao manual na planilha.
+15. Formatar Google Sheets automaticamente.
+16. Criar avaliacao de desempenho do bolao.
+17. Automatizar no Windows.
 
 ## 1. Organizar o Projeto
 
@@ -314,7 +315,7 @@ Implementado:
 - Criado suporte local em `data/elo_selecoes.csv`.
 - Criado modulo `src/palpites/elo.py`.
 - `data/odds_resumo.csv` agora recebe colunas Elo quando os dados estiverem preenchidos.
-- `data/palpites_odds.csv` propaga `elo_pontos_a`, `elo_pontos_b`, `diferenca_elo_pontos`, `favorito_elo` e `status_elo`.
+- `data/palpites_odds.csv` propaga colunas de rating Elo, diferenca entre selecoes, favorito Elo e status Elo.
 - Sem scraping automatico nesta etapa.
 
 Status atual dos dados:
@@ -405,13 +406,25 @@ Uso no modelo:
 - O spread so reforca o placar quando confirma o mesmo favorito apontado pelo `h2h`.
 - O arquivo `data/palpites_odds.csv` agora inclui colunas de auditoria para o placar.
 
-## 7. Analisar Mercado Exchange
+## 7. Conectar e Extrair Dados de Mercado Exchange
 
-Objetivo: incorporar sinal de mercado negociado, separado das odds tradicionais de casas.
+Objetivo: conectar em uma API de exchange, principalmente Betfair Exchange API, e extrair dados de mercado negociado para complementar as odds tradicionais de casas.
 
-Fonte candidata principal:
+Fonte principal candidata:
 
 - Betfair Exchange API, se houver conta, app key e permissao de uso.
+
+Escopo da etapa:
+
+- criar integracao com a API oficial da Betfair;
+- configurar autenticacao com credenciais locais seguras;
+- listar competicoes/eventos relevantes da Copa;
+- mapear eventos da Betfair contra os jogos do projeto;
+- extrair mercados de partida;
+- salvar dados brutos de exchange;
+- gerar resumo por jogo;
+- comparar exchange x odds de casas;
+- usar exchange como sinal de confirmacao, divergencia e liquidez.
 
 Dados desejados:
 
@@ -438,6 +451,7 @@ Saidas candidatas:
 ```text
 data/exchange_odds.csv
 data/exchange_resumo.csv
+data/exchange_eventos.csv
 ```
 
 Planilha:
@@ -446,8 +460,10 @@ Planilha:
 
 Gate:
 
-- Exige decisao do usuario sobre fonte, conta, app key, termos de uso e limites de requisicao.
+- Exige decisao do usuario sobre fonte, conta, app key, certificados quando aplicavel, termos de uso e limites de requisicao.
 - Nao implementar coleta real sem acesso oficial/API.
+- Nao salvar credenciais no Git.
+- Nao fazer scraping de exchange como substituto da API oficial.
 
 ## 8. Avaliar Sportmonks Predictions API
 
@@ -545,14 +561,99 @@ Risco:
 - Pode ter mudancas de layout.
 - Precisa validar termos de uso antes de automatizar coleta.
 
-Ordem sugerida para fontes externas:
+## Estrategia de Fontes por Niveis
 
-1. Expandir The Odds API.
-2. Analisar mercado exchange.
-3. Avaliar Sportmonks Predictions API.
-4. Avaliar Opta/Stats Perform.
-5. Avaliar scraping controlado, como Forebet.
-6. Manter Elo como complemento local/opcional.
+Objetivo: organizar as fontes por utilidade pratica, facilidade de automacao e papel dentro do modelo.
+
+Ranking FIFA continua fora do plano como fonte prioritaria. A preferencia do projeto e usar sinais estatisticos, mercado de odds e fontes automatizaveis.
+
+### Nivel 1 - Base Obrigatoria
+
+Fontes que sustentam o funcionamento minimo do projeto:
+
+- `football-data.org`: jogos, datas, status e resultados.
+- The Odds API: odds por jogo, mercados principais e movimento de mercado.
+- Google Sheets: painel de revisao e acompanhamento.
+
+### Nivel 2 - Forca das Selecoes
+
+Fontes para medir qualidade relativa entre selecoes:
+
+- World Football Elo Ratings.
+- Nate Silver / PELE, se houver dados acessiveis e uso permitido.
+
+Uso esperado:
+
+- calibrar favoritismo;
+- reduzir dependencia exclusiva das odds;
+- ajudar em jogos com mercado estranho ou baixa liquidez;
+- apoiar previsao de campeao e vice.
+
+### Nivel 3 - Previsoes Externas
+
+Fontes para validar probabilidades, placares e tendencias:
+
+- Opta Analyst / Supercomputer.
+- Forebet.
+- Sportmonks Predictions API, se houver plano/token.
+
+Uso esperado:
+
+- validar favoritos;
+- melhorar previsao de placar;
+- obter sinais de gols, BTTS ou placar provavel;
+- comparar previsoes externas contra odds e Elo.
+
+### Nivel 4 - Dados Profissionais, se Houver Acesso
+
+Fontes profissionais ou de mercado mais sofisticadas:
+
+- Opta / Stats Perform.
+- StatsBomb.
+- Wyscout.
+- Sportradar.
+- Pinnacle.
+- Betfair Exchange.
+
+Uso esperado:
+
+- enriquecer o modelo com dados de alta qualidade;
+- acompanhar odds mais eficientes;
+- medir liquidez, back/lay e movimento real de mercado;
+- melhorar simulacoes e previsoes de torneio.
+
+### Ordem Pratica Recomendada
+
+1. World Football Elo Ratings.
+2. Forebet, se a coleta automatizada for viavel e permitida.
+3. Opta Analyst, para validar favoritos e probabilidades publicadas.
+4. Betfair Exchange API, para mercado negociado e liquidez.
+5. Pinnacle, se houver acesso adequado a odds confiaveis.
+6. Sportmonks Predictions API, se houver plano/token.
+7. Dados profissionais como Opta/Stats Perform, StatsBomb, Wyscout ou Sportradar, somente se houver acesso oficial.
+
+### Uso por Objetivo
+
+Para bolao:
+
+- Odds;
+- Elo;
+- Forebet;
+- Opta Analyst.
+
+Para decisao manual com odds:
+
+- Betfair Exchange;
+- Pinnacle;
+- The Odds API;
+- historico de movimento.
+
+Para modelo mais robusto:
+
+- Opta/StatsBomb ou fonte profissional equivalente;
+- Elo;
+- odds de fechamento;
+- historico de movimento de mercado.
 
 ## 11. Melhorar o Modelo de Palpite
 
@@ -673,7 +774,76 @@ criterio
 criterio_placar
 ```
 
-## 13. Criar Aba de Revisao Manual
+## 13. Melhorar Previsibilidade dos Componentes do Bolao
+
+Objetivo: fazer o sistema prever, de forma auditavel, os componentes que importam para o bolao, sem misturar isso com regras externas do jogo.
+
+Componentes que o modelo deve buscar prever:
+
+- vencedor da partida;
+- empate;
+- placar exato;
+- gols do time A;
+- gols do time B;
+- gols do vencedor;
+- gols do perdedor;
+- diferenca de gols;
+- total de gols;
+- tendencia de jogo mais aberto ou mais fechado;
+- campeao do torneio;
+- vice-campeao do torneio.
+
+Fontes e sinais por componente:
+
+```text
+h2h -> vencedor, empate e favoritismo geral
+spreads -> diferenca de gols e forca do favorito
+totals -> total de gols e tendencia de jogo aberto/fechado
+team_totals -> gols esperados por selecao, se houver coleta confiavel
+BTTS -> chance de ambos marcarem, se houver endpoint confiavel
+Elo -> forca relativa entre selecoes
+movimento de mercado -> mudanca de expectativa ao longo do tempo
+exchange -> confirmacao ou divergencia do mercado negociado
+fontes estatisticas externas -> calibragem de forca, gols e simulacao de torneio
+```
+
+Colunas candidatas:
+
+```text
+previsao_resultado
+previsao_placar
+previsao_gols_time_a
+previsao_gols_time_b
+previsao_gols_vencedor
+previsao_gols_perdedor
+previsao_diferenca_gols
+previsao_total_gols
+previsao_tendencia_gols
+confianca_resultado
+confianca_gols
+confianca_placar
+fonte_previsao_resultado
+fonte_previsao_gols
+fonte_previsao_placar
+```
+
+Para campeao e vice:
+
+- criar previsao separada de torneio;
+- considerar chaveamento, fase de grupos e caminho ate a final;
+- usar probabilidades de avanco por fase quando houver fonte confiavel;
+- evitar misturar previsao de jogo individual com previsao de torneio.
+
+Tarefas:
+
+- [ ] Separar previsao de resultado, gols, diferenca e placar em funcoes claras.
+- [ ] Registrar fontes usadas para cada previsao.
+- [ ] Adicionar colunas de confianca por componente.
+- [ ] Avaliar coleta de `team_totals` e BTTS por endpoint apropriado.
+- [ ] Criar estrategia para previsao de campeao e vice.
+- [ ] Validar manualmente se as previsoes fazem sentido antes de automatizar decisoes.
+
+## 14. Criar Aba de Revisao Manual
 
 Objetivo: deixar claro que o sistema sugere, mas a decisao final e manual.
 
@@ -709,7 +879,7 @@ Regra:
 - A automacao nao deve sobrescrever `palpite_final` sem confirmacao.
 - A automacao pode atualizar `palpite_sugerido`.
 
-## 14. Formatar Google Sheets Automaticamente
+## 15. Formatar Google Sheets Automaticamente
 
 Objetivo: aplicar formatacoes visuais e funcionais nas abas atualizadas pelo Python, com definicao manual das regras coluna por coluna junto com o usuario.
 
@@ -762,22 +932,24 @@ Tarefas:
 - Testar em uma aba primeiro antes de aplicar em todas.
 - Documentar no `README.md` o que e formatado automaticamente.
 
-## 15. Criar Sistema de Pontuacao do Bolao
+## 16. Criar Avaliacao de Desempenho do Bolao
 
-Objetivo: medir desempenho dos palpites depois que os jogos comecarem.
+Objetivo: medir a qualidade das previsoes depois que os jogos comecarem.
 
 Criar aba:
 
 ```text
-pontuacao_bolao
+desempenho_bolao
 ```
 
-Calcular:
+Avaliar:
 
-- pontos por placar exato;
-- pontos por resultado correto;
-- pontos por aproximacao;
-- ranking dos palpites;
+- acerto de placar exato;
+- acerto de resultado;
+- acerto de gols do vencedor;
+- acerto de gols do perdedor;
+- acerto de diferenca de gols;
+- acerto de total de gols;
 - taxa de acerto do resultado;
 - taxa de placar exato;
 - desempenho por fase da Copa;
@@ -785,12 +957,12 @@ Calcular:
 
 Tarefas:
 
-- Definir regra de pontuacao do bolao.
 - Comparar `palpite_final` com placar real.
 - Criar resumo de performance.
-- Descobrir quais regras de palpite estao funcionando melhor.
+- Descobrir quais sinais de previsao estao funcionando melhor.
+- Ajustar o modelo com base na avaliacao, quando houver amostra suficiente.
 
-## 16. Automatizar no Windows
+## 17. Automatizar no Windows
 
 Objetivo: rodar a atualizacao automaticamente quando o fluxo estiver estavel.
 
@@ -829,10 +1001,11 @@ Antes de agendar:
 Como a organizacao inicial, logs, estrutura `src/`, historico inteligente e score de mercado ja foram feitos, o proximo passo recomendado e:
 
 1. Validar manualmente os novos placares gerados com `totals` e `spreads`.
-2. Avaliar Exchange com Betfair API se houver acesso.
-3. Avaliar Sportmonks Predictions API se houver interesse em plano pago.
-4. Avaliar Opta/Stats Perform se houver acesso oficial/API.
-5. Manter Elo como complemento local/opcional.
+2. Melhorar previsibilidade dos componentes do bolao.
+3. Conectar e extrair dados da Betfair Exchange API, se houver acesso.
+4. Avaliar Sportmonks Predictions API se houver interesse em plano pago.
+5. Avaliar Opta/Stats Perform se houver acesso oficial/API.
+6. Manter Elo como complemento local/opcional.
 
 ## Gates de Decisao
 
@@ -858,14 +1031,15 @@ Regra operacional:
 - [x] Comparar odds atuais x anteriores.
 - [x] Melhorar score baseado em odds e movimento de mercado.
 - [x] Expandir The Odds API.
-- [ ] Analisar mercado exchange.
+- [ ] Conectar e extrair dados de mercado exchange.
 - [ ] Avaliar Sportmonks Predictions API.
 - [ ] Avaliar Opta/Stats Perform.
 - [ ] Avaliar scraping controlado, como Forebet.
 - [x] Adicionar World Football Elo Ratings.
 - [ ] Melhorar modelo ponderado de palpite.
 - [x] Melhorar placar sugerido.
+- [ ] Melhorar previsibilidade dos componentes do bolao.
 - [ ] Criar revisao manual na planilha.
 - [ ] Formatar Google Sheets automaticamente.
-- [ ] Criar pontuacao do bolao.
+- [ ] Criar avaliacao de desempenho do bolao.
 - [ ] Automatizar no Windows.
