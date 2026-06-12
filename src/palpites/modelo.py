@@ -330,7 +330,6 @@ def gerar_palpites(arquivo_entrada=ODDS_RESUMO_CSV, arquivo_saida=PALPITES_ODDS_
     palpites["odd_handicap_favorito"] = df["odd_handicap_favorito"]
     palpites["forca_handicap"] = df["forca_handicap"]
     palpites["criterio"] = "odds_h2h_media_normalizada_movimento_mercado"
-    palpites["status_revisao"] = "pendente"
 
     palpites.to_csv(arquivo_saida, index=False, encoding="utf-8-sig")
 

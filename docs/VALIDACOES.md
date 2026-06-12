@@ -173,3 +173,195 @@ fonte_previsao_placar: odds_h2h+totals_mais_gols+spread_forte
 Validacao pendente:
 
 - `python -m src.palpites.modelo gerar` contra os CSVs reais nao foi executado porque `data/odds_resumo.csv` nao existe neste workspace.
+
+## 14. Revisao Manual e Mudanca de Direcao
+
+Escopo executado inicialmente:
+
+- Adicionada rotina para criar/atualizar a aba `revisao_palpites`.
+- A aba e montada a partir de `data/palpites_odds.csv`.
+- Antes de atualizar a aba, o script le os campos manuais existentes e os reaplica por `id_odds_api`.
+- A aba `palpites_bolao` continua sendo uma saida automatica completa.
+- A aba `revisao_palpites` passa a ser a area recomendada para revisao manual.
+
+Campos manuais preservados:
+
+```text
+palpite_final
+placar_final
+status_revisao
+observacao_manual
+```
+
+Validacoes feitas:
+
+```powershell
+.\.venv\Scripts\python.exe -m py_compile src\sheets\google_sheets.py
+```
+
+Validacao local com `data/palpites_odds.csv`:
+
+- A funcao `montar_revisao_palpites` foi executada com uma linha real do CSV e campos manuais simulados.
+- Resultado: `palpite_final`, `placar_final`, `status_revisao` e `observacao_manual` foram preservados corretamente.
+
+Execucao no Google Sheets:
+
+```powershell
+.\.venv\Scripts\python.exe -c "from src.sheets.google_sheets import abrir_planilha, atualizar_revisao_palpites; atualizar_revisao_palpites(abrir_planilha())"
+```
+
+Resultado:
+
+- A primeira tentativa foi bloqueada pelo sandbox por acesso de rede ao Google.
+- A execucao autorizada foi concluida.
+- A aba `revisao_palpites` foi atualizada a partir de `data/palpites_odds.csv` preservando campos manuais.
+
+Validacao pendente:
+
+- Usuario conferir visualmente a aba `revisao_palpites` na planilha.
+
+Decisao posterior:
+
+- O usuario decidiu que campos manuais nao sao prioridade para o objetivo atual.
+- O foco passa a ser previsao automatica, resultado real e base historica para estudos futuros.
+- A rotina `revisao_palpites` foi removida de `src/sheets/google_sheets.py`.
+- A coluna `status_revisao` foi removida da geracao de `data/palpites_odds.csv`.
+- A aba pode continuar existindo na planilha como resquicio manual, mas nao e mais criada nem atualizada pelo projeto.
+- A proxima etapa deve ser planejada com o usuario antes de implementar `historico_previsoes`.
+
+Validacao apos remocao:
+
+```powershell
+.\.venv\Scripts\python.exe -m py_compile src\sheets\google_sheets.py src\palpites\modelo.py
+.\.venv\Scripts\python.exe -m src.palpites.modelo gerar
+```
+
+Resultado:
+
+- `data/palpites_odds.csv` foi regenerado com 71 palpites.
+- A saida passou a ter 45 colunas, sem `status_revisao`.
+
+## 15. Formatar Google Sheets Automaticamente
+
+Escopo executado:
+
+- Adicionada preparacao dos dados antes do envio ao Google Sheets.
+- Datas e horas das abas automaticas sao convertidas para o fuso `America/Sao_Paulo`.
+- Os nomes das colunas sao preservados; o fuso correto fica no valor exibido, nao no nome da coluna.
+- Valores decimais sao arredondados para no maximo 4 casas.
+- Adicionada formatacao visual basica: primeira linha congelada, filtro, cabecalho destacado, alinhamento no topo, quebra de texto e larguras iniciais.
+
+Abas incluidas:
+
+```text
+jogos
+odds
+odds_resumo
+palpites_bolao
+```
+
+Validacoes locais:
+
+```powershell
+.\.venv\Scripts\python.exe -m py_compile src\sheets\google_sheets.py
+```
+
+Exemplo validado com `data/palpites_odds.csv`:
+
+```text
+data_hora_utc     prob_a_media  prob_empate_media  prob_b_media
+14/06/2026 20:00        0.2678              0.337        0.3952
+```
+
+Exemplo validado com `data/odds_copa.csv`:
+
+```text
+data_hora_utc: 11/06/2026 23:00
+atualizado_em: 11/06/2026 18:25
+```
+
+Validacao pendente:
+
+- Conferir visualmente as quatro abas automaticas na planilha.
+
+Execucao no Google Sheets:
+
+```powershell
+.\.venv\Scripts\python.exe -c "from src.sheets.google_sheets import ABAS_CSV, abrir_planilha, atualizar_aba; sh = abrir_planilha(); [atualizar_aba(sh, nome, arquivo) for nome, arquivo in ABAS_CSV]"
+```
+
+Resultado:
+
+- `jogos` atualizada.
+- `odds` atualizada.
+- `odds_resumo` atualizada.
+- `palpites_bolao` atualizada.
+
+## 14. Criar Historico de Previsoes
+
+Decisoes do usuario:
+
+- Usar apenas uma previsao historica por jogo, sem multiplos snapshots.
+- Usar janela padrao de 3 horas antes do jogo.
+- Antes da janela, a previsao pode ser atualizada.
+- A partir da janela de 3 horas, a previsao fica congelada.
+- Depois do jogo comecar, a previsao nao deve ser alterada; apenas resultados reais e metricas podem ser atualizados.
+- Salvar em CSV local e Google Sheets.
+
+Implementado:
+
+- Criado `src/palpites/historico_previsoes.py`.
+- Criado caminho `HISTORICO_PREVISOES_CSV` em `src/utils/config.py`.
+- Adicionada etapa `python -m src.palpites.historico_previsoes` no orquestrador.
+- Adicionada aba `historico_previsoes` ao exportador do Google Sheets.
+- O exportador passa a criar a aba se ela nao existir.
+- Datas de controle do historico tambem sao formatadas no horario local configurado na planilha.
+- Removidas as colunas `registro_criado_em` e `congelada_em`; `registro_atualizado_em` e `previsao_congelada` sao suficientes para auditoria operacional.
+- A associacao com `jogos_copa.csv` usa times e `data_hora_utc`, com fallback por times.
+
+Validacoes locais:
+
+```powershell
+.\.venv\Scripts\python.exe -m py_compile src\palpites\historico_previsoes.py src\atualizar_tudo.py src\sheets\google_sheets.py src\utils\config.py
+.\.venv\Scripts\python.exe -m src.palpites.historico_previsoes
+```
+
+Resultado local:
+
+- `data/historico_previsoes.csv` atualizado.
+- Total de previsoes historicas: 71.
+- Previsoes congeladas: 0.
+- Resultado esperado no momento da validacao, pois os jogos ainda nao estavam dentro da janela de 3 horas.
+
+Colunas principais verificadas:
+
+```text
+id_odds_api
+data_jogo
+time_a
+time_b
+resultado_sugerido
+placar_sugerido
+previsao_congelada
+janela_congelamento_horas
+resultado_real
+```
+
+Validacao pendente:
+
+- Usuario conferir visualmente a aba `historico_previsoes` no Google Sheets.
+
+Execucao no Google Sheets:
+
+```powershell
+.\.venv\Scripts\python.exe -c "from src.sheets.google_sheets import abrir_planilha, atualizar_aba; from src.utils.config import HISTORICO_PREVISOES_CSV; atualizar_aba(abrir_planilha(), 'historico_previsoes', HISTORICO_PREVISOES_CSV)"
+```
+
+Resultado:
+
+- Aba `historico_previsoes` criada/atualizada a partir de `data/historico_previsoes.csv`.
+- Apos ajuste de chave de jogo, o CSV foi regenerado e a aba foi atualizada novamente.
+- Ajustado exportador para enviar `id_jogo` como identificador textual, evitando exibicao como `537352.0` na planilha.
+- Ajustados nomes das colunas para nao usar sufixo de fuso; o horario local configurado continua aplicado aos valores exibidos.
+- `data/historico_previsoes.csv` foi regenerado sem `registro_criado_em`, `congelada_em` e `data_jogo_brasilia`.
+- A aba `historico_previsoes` foi atualizada novamente com os nomes finais das colunas.

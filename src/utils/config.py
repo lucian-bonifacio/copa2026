@@ -17,6 +17,7 @@ ODDS_MERCADOS_CSV = DATA_DIR / "odds_mercados.csv"
 ODDS_HISTORICO_CSV = DATA_DIR / "odds_historico.csv"
 ODDS_RESUMO_CSV = DATA_DIR / "odds_resumo.csv"
 PALPITES_ODDS_CSV = DATA_DIR / "palpites_odds.csv"
+HISTORICO_PREVISOES_CSV = DATA_DIR / "historico_previsoes.csv"
 ELO_SELECOES_CSV = DATA_DIR / "elo_selecoes.csv"
 HISTORICO_ODDS_DIR = DATA_DIR / "historico_odds"
 

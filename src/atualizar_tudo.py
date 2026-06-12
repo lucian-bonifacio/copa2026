@@ -9,6 +9,7 @@ ETAPAS = [
     ("Salvar historico", ["-m", "src.utils.historico"]),
     ("Resumir odds", ["-m", "src.palpites.modelo", "resumir"]),
     ("Gerar palpites", ["-m", "src.palpites.modelo", "gerar"]),
+    ("Atualizar historico de previsoes", ["-m", "src.palpites.historico_previsoes"]),
     ("Atualizar Google Sheets", ["-m", "src.sheets.google_sheets"]),
 ]
 

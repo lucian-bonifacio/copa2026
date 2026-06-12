@@ -2,23 +2,134 @@
 
 Instrucoes para agentes e assistentes que forem trabalhar neste repositorio.
 
+Este arquivo define o modo de trabalho do agente neste projeto. Ele deve ser tratado como a regra operacional principal para decidir o que ler, quando planejar, quando implementar, quando parar e como atualizar a documentacao.
+
 ## Antes de Fazer Qualquer Alteracao
 
-1. Leia este arquivo inteiro.
-2. Leia o `README.md`.
-3. Verifique o estado do Git com `git status --short`.
-4. Entenda o fluxo atual antes de alterar scripts.
+Antes de qualquer alteracao no projeto, o agente deve:
+
+1. Ler este `AGENTS.md` inteiro.
+2. Ler o `README.md`.
+3. Ler o `ROADMAP.md` para saber onde o projeto parou, qual e o proximo passo previsto e quais etapas devem orientar a continuidade do trabalho.
+
+## ROADMAP.md Como Estado da Obra
+
+O `ROADMAP.md` e a fonte de verdade da execucao do projeto.
+
+Ele deve representar o estado da obra: onde o projeto parou, o que ja foi concluido, o que esta pendente, o que esta bloqueado e qual e o proximo item de execucao.
+
+Regras:
+
+- Toda tarefa planejada ate a conclusao do projeto deve estar representada no `ROADMAP.md`.
+- Se o usuario pedir algo que ainda nao esta previsto no `ROADMAP.md`, registre primeiro como novo item de execucao no roadmap.
+- Posicione novos itens em ordem logica, considerando dependencias, prioridade e estado atual da obra.
+- Nao use o `ROADMAP.md` como log completo de terminal, historico repetitivo ou registro longo de detalhes operacionais.
+- Atualize o `ROADMAP.md` somente nos momentos definidos no fluxo de trabalho.
+
+## Documento de Log da Execucao
+
+Use `docs/VALIDACOES.md` como documento de log da execucao.
+
+Ele deve registrar detalhes que nao devem sobrecarregar o `ROADMAP.md`, como:
+
+- comandos executados;
+- validacoes realizadas;
+- resultados locais;
+- decisoes relevantes;
+- observacoes tecnicas;
+- consumo de creditos de API;
+- execucoes autorizadas;
+- erros encontrados e correcoes aplicadas.
+
+O `ROADMAP.md` deve conter o resumo e, quando necessario, apontar para a secao correspondente em `docs/VALIDACOES.md`.
+
+## Fluxo de Trabalho
+
+Este fluxo pode ser iniciado por uma das duas hipoteses abaixo.
+
+**A. Identifique o item de execucao atual no `ROADMAP.md`**
+
+- Siga diretamente para o item 1.
+
+**B. Solicitacao do usuario ainda nao prevista no `ROADMAP.md`**
+
+- Registre a solicitacao como novo item de execucao no `ROADMAP.md`.
+- Posicione o item em ordem logica, considerando dependencias, prioridade e estado atual da obra.
+- Nao implemente nada durante esse ajuste.
+- Retorne a hipotese **A. Identifique o item de execucao atual no `ROADMAP.md`**.
+
+1. Leia o item de execucao atual no `ROADMAP.md`, verifique o contexto atual do projeto e identifique silenciosamente restricoes, dependencias ou riscos relevantes antes de propor qualquer acao.
+
+2. Apresente um **Plano Curtissimo** antes de implementar, com o seguinte formato obrigatorio:
+
+   - **Objetivo:** ate 2 ou 3 frases curtas.
+   - **Plano tecnico:** 3 a 5 acoes tecnicas objetivas.
+   - **Operacoes sensiveis:** comandos, alteracoes destrutivas ou operacoes sensiveis. Se nao houver, escreva `Nenhuma`.
+
+   Ao final, pergunte exatamente: **"Aprova este plano (S/N) ou tem alguma duvida tecnica?"**
+
+3. Interprete a resposta do usuario ao gate do plano.
+
+   - Se o usuario aprovar explicitamente com **"S"** ou equivalente claro, execute o plano e siga o fluxo.
+
+   - Se houver duvida, pedido de ajuste ou ausencia de aprovacao clara (**Sub-fluxo de Esclarecimento/Ajuste**):
+     - **nao implemente**;
+     - responda de forma objetiva e curta, sem implementar;
+     - mantenha o dialogo ate o usuario declarar que a duvida foi resolvida ou autorizar a continuidade;
+     - entao apresente um **Novo Plano Curtissimo**;
+     - re-valide: **"Podemos seguir com o plano (S/N)?"**
+
+4. Execute o plano aprovado em modo continuo e autonomo e, durante a codificacao, verifique silenciosamente as **Regras Obrigatorias**.
+
+5. Se a implementacao exigir descumprir qualquer **Regra Obrigatoria**, pare imediatamente e peca autorizacao expressa do usuario antes de continuar.
+
+6. Ao concluir a implementacao, informe o usuario e aguarde a homologacao pratica.
+
+   - Se o usuario aprovar a implementacao, siga para o item 7.
+
+   - Se o usuario reportar erro ou pedir ajuste:
+     - **nao atualize o `ROADMAP.md` como concluido**;
+     - retorne ao **Sub-fluxo de Esclarecimento/Ajuste** do item 3.
+
+7. Apos a homologacao aprovada pelo usuario, atualize o `ROADMAP.md` como concluido e reinicie este fluxo no item 1 para o proximo item de execucao.
+
+   A atualizacao do `ROADMAP.md` deve seguir este formato minimo:
+
+   - **Status do item:** marcar como concluido.
+   - **Resumo da execucao:** registrar em 1 ou 2 frases o que foi implementado.
+   - **Proximo item:** indicar qual sera o proximo item de execucao previsto.
 
 ## Regras Obrigatorias
 
 - Respeite o ambiente virtual `.venv`.
-- Nao modifique, nao formate, nao mova e nao leia o arquivo `service_account.json`, salvo se o usuario pedir explicitamente.
-- Nao exponha, imprima ou versione segredos.
-- Preserve o fluxo principal do projeto: buscar odds, salvar historico, resumir odds, gerar palpites e atualizar a planilha.
+- Nao modifique, nao formate, nao mova e nao leia arquivos de segredo, como `.env` e `service_account.json`, salvo se o usuario pedir explicitamente.
+- Nao exponha, imprima, copie para logs ou versione segredos, tokens, chaves de API ou credenciais.
 - Prefira mudancas pequenas, claras e testaveis.
-- Nao apague CSVs, historicos ou arquivos gerados sem autorizacao explicita do usuario.
-- Se uma etapa depender de uma decisao importante do usuario, credencial, acao externa, consumo relevante de API, alteracao no Google Sheets ou escolha de regra de negocio, crie um gate: pare a execucao, explique a decisao e aguarde confirmacao expressa.
-- Execute o roadmap um passo por vez. Ao concluir uma etapa, pare, informe o que foi feito e aguarde o usuario realizar testes manuais e autorizar expressamente o proximo passo.
+- Nao apague CSVs, historicos, arquivos gerados ou abas da planilha sem autorizacao explicita do usuario.
+- Verifique o estado do Git com `git status --short` antes de qualquer alteracao.
+- Entenda o contexto e o fluxo afetado antes de alterar scripts, regras de negocio, planilhas ou arquivos gerados.
+- Rode validacoes compativeis com a mudanca feita antes de finalizar a implementacao.
+- Nao avance para o proximo item do `ROADMAP.md` sem homologacao pratica do usuario.
+
+## Gates de Aprovacao
+
+Os gates principais do projeto sao:
+
+1. **Gate do plano:** antes de qualquer implementacao, conforme o item 2 do Fluxo de Trabalho.
+2. **Gate de excecao:** durante a execucao, se for necessario descumprir uma Regra Obrigatoria ou sair do plano aprovado.
+3. **Gate de homologacao:** ao final da implementacao, antes de marcar o item como concluido no `ROADMAP.md`.
+4. **Gate de revalidacao:** quando houver erro, duvida ou ajuste solicitado pelo usuario.
+
+Durante uma implementacao ja autorizada, o agente deve executar com autonomia o que estiver dentro do plano aprovado.
+
+Abra novo gate durante a execucao somente quando surgir uma acao sensivel nao prevista no plano aprovado, como:
+
+- comando destrutivo ou de limpeza, como `git reset`, `git clean`, exclusao recursiva, limpeza de volumes ou remocao em massa;
+- exclusao de CSVs, historicos, arquivos gerados ou abas da planilha;
+- alteracao em credenciais, segredos, `.env` ou `service_account.json`;
+- chamada externa com custo, API paga ou consumo relevante de creditos nao previsto no plano aprovado;
+- alteracao no Google Sheets fora das abas, intervalos ou comportamento previstos no plano aprovado;
+- mudanca de regra de negocio, criterio de previsao, congelamento de previsoes ou avaliacao de desempenho fora do que foi aprovado.
 
 ## Ambiente
 
@@ -64,44 +175,6 @@ O `service_account.json` contem credencial do Google Cloud e deve ser tratado co
 
 Os arquivos CSV e a pasta `data/historico_odds/` sao artefatos gerados pelo fluxo local. Eles devem ficar fora do Git por enquanto. Se algum novo segredo ou artefato gerado for criado, atualize o `.gitignore`.
 
-## Fluxo de Trabalho com o Usuario
-
-Este projeto deve evoluir por etapas curtas e validadas manualmente.
-
-Regras do fluxo:
-
-1. Trabalhe somente no passo atual autorizado pelo usuario.
-2. Se surgir uma decisao relevante, abra um gate antes de continuar.
-3. Ao terminar o passo, rode validacoes compativeis com a mudanca.
-4. Informe os arquivos alterados, os comandos executados e qualquer risco restante.
-5. Pare e aguarde os testes manuais do usuario.
-6. So avance para o proximo passo com ordem expressa do usuario.
-
-## Documentacao de Roadmap e Validacoes
-
-Use os documentos com responsabilidades separadas:
-
-- `ROADMAP.md`: painel principal do projeto, com status, tarefas, gates, decisoes resumidas e proximos passos.
-- `docs/VALIDACOES.md`: registro detalhado de validacoes, execucoes autorizadas, comandos, resultados locais, consumo de creditos e observacoes maiores.
-- `README.md`: funcionamento atual e estavel do projeto, comandos de uso, estrutura e cuidados.
-
-Ao concluir uma etapa do roadmap:
-
-1. Atualize o status, tarefas e resumo no `ROADMAP.md`.
-2. Se houver resultado detalhado, registre em `docs/VALIDACOES.md`.
-3. No `ROADMAP.md`, aponte para a secao correspondente de `docs/VALIDACOES.md`.
-4. Nao transforme o `ROADMAP.md` em log completo de terminal ou historico repetitivo de execucoes.
-
-Exemplos de gates:
-
-- consumo de creditos de API;
-- consulta de fonte externa nova;
-- criacao ou alteracao de credenciais;
-- alteracao no Google Sheets;
-- regra de negocio que muda o palpite;
-- automacao agendada no Windows;
-- operacao destrutiva ou limpeza de artefatos.
-
 ## Fluxo do Projeto
 
 Modulos principais:
@@ -112,31 +185,27 @@ src/apis/football_data.py
 src/apis/odds_api.py
 src/sheets/google_sheets.py
 src/palpites/modelo.py
+src/palpites/historico_previsoes.py
 src/utils/config.py
 src/utils/historico.py
 ```
 
 Nao recrie wrappers na raiz sem motivo forte. A logica principal deve ficar nos modulos dentro de `src/`.
 
-Fluxo executado por `python -m src.atualizar_tudo`:
-
-1. Salvar jogos da Copa em `data/jogos_copa.csv`.
-2. Buscar odds novas.
-3. Salvar historico de odds.
-4. Resumir odds por jogo.
-5. Gerar palpites sugeridos.
-6. Atualizar Google Sheets.
+O fluxo operacional atual executado por `python -m src.atualizar_tudo` esta documentado no `README.md` e deve ser tratado como contexto tecnico atual, nao como regra imutavel.
 
 ## Boas Praticas de Edicao
 
-- Use `README.md` como fonte de contexto do projeto.
+- Use `README.md` como fonte de contexto do funcionamento atual e estavel do projeto.
+- Use `ROADMAP.md` como fonte de verdade da execucao e do proximo passo.
+- Use `docs/VALIDACOES.md` como log detalhado de execucao, validacoes e decisoes.
 - Ao criar ou alterar scripts, mantenha nomes descritivos e coerentes com os scripts existentes.
-- Prefira implementar logica nova dentro de `src/` e manter os scripts da raiz como entradas simples.
+- Prefira implementar logica nova dentro de `src/`.
 - Evite refatoracoes grandes sem necessidade.
-- Se alterar logica de odds ou palpites, documente a regra no `README.md`.
+- Se alterar logica de odds, previsoes, historico de previsoes, congelamento ou metricas, documente a regra no `README.md` e no `ROADMAP.md`.
 - Se adicionar nova dependencia Python, atualize `requirements.txt`.
 - Se adicionar novo arquivo sensivel ou gerado, atualize `.gitignore`.
-- Antes de finalizar, rode pelo menos verificacoes simples compatíveis com a mudanca feita.
+- Antes de finalizar, rode pelo menos verificacoes simples compativeis com a mudanca feita.
 
 ## Google Sheets
 
@@ -149,9 +218,10 @@ Abas conhecidas:
 - odds_resumo
 - previsoes
 - palpites_bolao
+- historico_previsoes
 - apostas_exchange
 
-Nao altere nomes de abas ou URL da planilha sem confirmar com o usuario.
+Nao altere nomes de abas, URL da planilha, estrutura de abas existentes ou comportamento de atualizacao sem que isso esteja previsto no plano aprovado.
 
 ## Git
 
@@ -176,6 +246,7 @@ data/
   odds_copa.csv
   odds_resumo.csv
   palpites_odds.csv
+  historico_previsoes.csv
   historico_odds/
 ```
 
@@ -187,7 +258,8 @@ O projeto comecou usando apenas odds `h2h`, mas agora tambem possui suporte loca
 - movimento de mercado;
 - odds avancadas `totals` e `spreads`;
 - Elo local opcional via `data/elo_selecoes.csv`;
-- criterios auditaveis de placar sugerido.
+- criterios auditaveis de placar sugerido;
+- historico de previsoes com congelamento pre-jogo.
 
 Mesmo assim, nao assuma que o sistema ja entende automaticamente:
 
@@ -198,4 +270,4 @@ Mesmo assim, nao assuma que o sistema ja entende automaticamente:
 - previsoes premium de Opta, Sportmonks ou Forebet;
 - mercado exchange.
 
-Qualquer melhoria nessas direcoes deve ser tratada como nova etapa do roadmap e passar por gate quando envolver fonte externa, custo, scraping ou regra de negocio relevante.
+Qualquer melhoria nessas direcoes deve ser tratada como novo item no `ROADMAP.md` e seguir o Fluxo de Trabalho deste arquivo.

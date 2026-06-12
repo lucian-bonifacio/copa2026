@@ -43,7 +43,7 @@ MVP 1 concluido:
 11. Melhorar modelo de palpite.
 12. Melhorar placar sugerido.
 13. Melhorar previsibilidade dos componentes do bolao.
-14. Criar revisao manual na planilha.
+14. Criar historico de previsoes.
 15. Formatar Google Sheets automaticamente.
 16. Criar avaliacao de desempenho do bolao.
 17. Automatizar no Windows.
@@ -827,43 +827,89 @@ Implementado no escopo local:
 
 Detalhes: `docs/VALIDACOES.md#13-melhorar-previsibilidade-dos-componentes-do-bolao`.
 
-## 14. Criar Aba de Revisao Manual
+## 14. Criar Historico de Previsoes
 
-Objetivo: deixar claro que o sistema sugere, mas a decisao final e manual.
+Status: implementado com congelamento 3 horas antes do jogo.
 
-Na planilha, criar ou ajustar colunas:
+Objetivo: criar uma base acumulada de previsoes automaticas para comparacao futura com resultados reais e estudos estatisticos.
 
-```text
-palpite_sugerido
-palpite_final
-status_revisao
-observacao_manual
-```
+Decisao tomada:
 
-Status possiveis:
+- A aba `revisao_palpites` foi removida do fluxo do projeto.
+- Campos manuais como `palpite_final` e `observacao_manual` nao sao prioridade neste momento.
+- O foco passa a ser previsao automatica, resultado real e base historica para analise futura.
 
-```text
-pendente
-revisado
-alterado_manual
-confirmado
-```
-
-Fluxo:
+Ideia geral:
 
 ```text
-sistema sugere
-  -> usuario revisa
-  -> usuario ajusta se necessario
-  -> usuario confirma palpite final
+palpite automatico gerado em um momento
+  -> historico_previsoes registra a foto util
+  -> resultado real entra depois
+  -> desempenho e erros sao calculados
 ```
 
-Regra:
+Decisoes implementadas:
 
-- A automacao nao deve sobrescrever `palpite_final` sem confirmacao.
-- A automacao pode atualizar `palpite_sugerido`.
+- Nao salvar multiplos snapshots por execucao.
+- Manter no maximo uma linha por `id_odds_api`.
+- Antes da janela de congelamento, atualizar a linha com a previsao mais recente.
+- Congelar a previsao 3 horas antes do inicio do jogo.
+- Depois de congelada, nao alterar mais campos de previsao.
+- Apos o jogo, atualizar apenas campos de resultado real e metricas de acerto.
+- Salvar em CSV local e Google Sheets.
+
+Saidas:
+
+```text
+data/historico_previsoes.csv
+aba historico_previsoes
+```
+
+Colunas candidatas:
+
+```text
+id_jogo
+id_odds_api
+registro_atualizado_em
+data_jogo
+time_a
+time_b
+resultado_sugerido
+placar_sugerido
+prob_a_media
+prob_empate_media
+prob_b_media
+confianca
+confianca_mercado
+favoritismo_movimento
+elo_pontos_a
+elo_pontos_b
+tendencia_gols
+forca_handicap
+placar_real_a
+placar_real_b
+resultado_real
+acertou_resultado
+acertou_placar
+erro_total_gols
+erro_diferenca_gols
+```
+
+Implementado:
+
+- Criado `src/palpites/historico_previsoes.py`.
+- Adicionado `HISTORICO_PREVISOES_CSV` em `src/utils/config.py`.
+- Adicionada etapa no orquestrador antes do Google Sheets.
+- Adicionada aba `historico_previsoes` em `src/sheets/google_sheets.py`.
+- O exportador cria a aba se ela ainda nao existir.
+
+Validacao pendente:
+
+- Usuario conferir a aba `historico_previsoes` na planilha.
 
 ## 15. Formatar Google Sheets Automaticamente
+
+Status: implementado para formatacao basica das abas automaticas.
 
 Objetivo: aplicar formatacoes visuais e funcionais nas abas atualizadas pelo Python, com definicao manual das regras coluna por coluna junto com o usuario.
 
@@ -885,8 +931,6 @@ Escopo inicial:
 - formatar odds como numero decimal;
 - formatar probabilidades como percentual;
 - destacar colunas de confianca;
-- destacar colunas de status de revisao;
-- preservar campos manuais como `palpite_final` e `observacao_manual`;
 - definir regras especificas por aba.
 
 Abas candidatas:
@@ -902,19 +946,25 @@ Exemplos de decisoes que precisam ser feitas com o usuario:
 - colunas que devem ficar congeladas;
 - cores para cabecalho;
 - cores para `confianca`: alta, media, baixa;
-- cores para `status_revisao`: pendente, revisado, alterado_manual, confirmado;
 - quantidade de casas decimais em odds;
 - formato de percentual em probabilidades;
 - larguras de colunas principais.
 
 Tarefas:
 
-- Mapear colunas de cada aba.
-- Definir formatacao coluna por coluna com o usuario.
-- Criar funcoes de formatacao em `src/sheets/google_sheets.py` ou modulo futuro de Sheets.
-- Aplicar formatacao apos atualizar os dados.
-- Testar em uma aba primeiro antes de aplicar em todas.
-- Documentar no `README.md` o que e formatado automaticamente.
+- [x] Mapear colunas de cada aba.
+- [x] Definir formatacao inicial com o usuario.
+- [x] Criar funcoes de formatacao em `src/sheets/google_sheets.py`.
+- [x] Aplicar formatacao apos atualizar os dados nas abas automaticas.
+- [x] Documentar no `README.md` o que e formatado automaticamente.
+
+Implementado:
+
+- Abas formatadas: `jogos`, `odds`, `odds_resumo` e `palpites_bolao`.
+- Datas e horas sao exibidas no horario local configurado no formato `dd/mm/aaaa hh:mm`.
+- Os nomes das colunas sao preservados; o fuso correto fica no valor exibido, nao no nome da coluna.
+- Numeros decimais sao arredondados para no maximo 4 casas.
+- Cabecalho congelado, filtro aplicado, cabecalho destacado e larguras basicas ajustadas.
 
 ## 16. Criar Avaliacao de Desempenho do Bolao
 
@@ -941,7 +991,7 @@ Avaliar:
 
 Tarefas:
 
-- Comparar `palpite_final` com placar real.
+- Comparar previsao historica com placar real.
 - Criar resumo de performance.
 - Descobrir quais sinais de previsao estao funcionando melhor.
 - Ajustar o modelo com base na avaliacao, quando houver amostra suficiente.
@@ -985,7 +1035,7 @@ Antes de agendar:
 Como a organizacao inicial, logs, estrutura `src/`, historico inteligente e score de mercado ja foram feitos, o proximo passo recomendado e:
 
 1. Validar manualmente as novas colunas de previsao por componente em `data/palpites_odds.csv`.
-2. Criar revisao manual na planilha, preservando campos manuais.
+2. Validar visualmente `historico_previsoes` no Google Sheets.
 3. Conectar e extrair dados da Betfair Exchange API, se houver acesso.
 4. Avaliar Sportmonks Predictions API se houver interesse em plano pago.
 5. Avaliar Opta/Stats Perform se houver acesso oficial/API.
@@ -1023,7 +1073,7 @@ Regra operacional:
 - [ ] Melhorar modelo ponderado de palpite.
 - [x] Melhorar placar sugerido.
 - [ ] Melhorar previsibilidade dos componentes do bolao.
-- [ ] Criar revisao manual na planilha.
-- [ ] Formatar Google Sheets automaticamente.
+- [x] Criar historico de previsoes.
+- [x] Formatar Google Sheets automaticamente.
 - [ ] Criar avaliacao de desempenho do bolao.
 - [ ] Automatizar no Windows.

@@ -2,7 +2,7 @@
 
 Sistema semi-automatico para apoiar palpites em bolao da Copa do Mundo, analise de odds, acompanhamento de mercado e atualizacao de uma planilha Google Sheets.
 
-O projeto nao faz apostas automaticas. Ele apenas coleta dados, organiza informacoes e gera sugestoes para revisao manual.
+O projeto nao faz apostas automaticas. Ele apenas coleta dados, organiza informacoes, gera sugestoes e prepara base para comparacao futura com resultados reais.
 
 ## Objetivo
 
@@ -103,6 +103,7 @@ Abas usadas/criadas:
 - odds_resumo
 - previsoes
 - palpites_bolao
+- historico_previsoes
 - apostas_exchange
 
 A atualizacao e feita com:
@@ -170,6 +171,7 @@ data/odds_avancadas_resumo.csv
 data/odds_historico.csv
 data/odds_resumo.csv
 data/palpites_odds.csv
+data/historico_previsoes.csv
 data/elo_selecoes.csv
 ```
 
@@ -477,6 +479,28 @@ selecao,elo_rank,elo_pontos,atualizado_em,fonte
 
 O arquivo e criado automaticamente com as selecoes encontradas nos jogos quando o resumo e gerado. Depois disso, pode ser preenchido manualmente ou por importacao controlada.
 
+### `src/palpites/historico_previsoes.py`
+
+Mantem uma base historica de previsoes automaticas em:
+
+```text
+data/historico_previsoes.csv
+```
+
+Regra atual:
+
+- existe no maximo uma linha por `id_odds_api`;
+- antes da janela de congelamento, a linha pode ser atualizada com a previsao mais recente;
+- a previsao congela 3 horas antes do inicio do jogo;
+- depois de congelada, a previsao nao muda mais;
+- apos o jogo, apenas campos de resultado real e metricas de acerto podem ser atualizados.
+
+Comando:
+
+```powershell
+python -m src.palpites.historico_previsoes
+```
+
 ### `src/sheets/google_sheets.py`
 
 Atualiza o Google Sheets.
@@ -494,7 +518,20 @@ jogos          <- data/jogos_copa.csv
 odds           <- data/odds_copa.csv
 odds_resumo    <- data/odds_resumo.csv
 palpites_bolao <- data/palpites_odds.csv
+historico_previsoes <- data/historico_previsoes.csv
 ```
+
+A aba `palpites_bolao` e uma saida automatica e pode ser sobrescrita a cada execucao. Ela representa a visao atual das previsoes do modelo.
+A aba `historico_previsoes` preserva a previsao congelada por jogo e serve como base para comparacao futura com resultados reais.
+
+Nas abas automaticas `jogos`, `odds`, `odds_resumo`, `palpites_bolao` e `historico_previsoes`, os dados enviados ao Google Sheets recebem uma formatacao de leitura:
+
+- datas e horas sao exibidas no horario local configurado, no formato `dd/mm/aaaa hh:mm`;
+- os nomes das colunas sao preservados; o fuso correto fica no valor exibido, nao no nome da coluna;
+- numeros decimais sao arredondados para no maximo 4 casas;
+- a primeira linha fica congelada, com filtro e cabecalho destacado.
+
+Essa formatacao e aplicada somente na planilha. Os CSVs em `data/` continuam preservando os dados originais.
 
 ### `src/atualizar_tudo.py`
 
@@ -507,7 +544,8 @@ Roda:
 3. `python -m src.utils.historico`
 4. `python -m src.palpites.modelo resumir`
 5. `python -m src.palpites.modelo gerar`
-6. `python -m src.sheets.google_sheets`
+6. `python -m src.palpites.historico_previsoes`
+7. `python -m src.sheets.google_sheets`
 
 Comando principal:
 
@@ -585,7 +623,7 @@ Politica atual de versionamento:
 Sugestoes de evolucao:
 
 1. Validar manualmente as previsoes por componente em `data/palpites_odds.csv`.
-2. Criar uma aba de revisao manual com `palpite_sugerido`, `palpite_final` e `status_revisao`.
+2. Validar a aba `historico_previsoes` na planilha.
 3. Criar avaliacao de desempenho do bolao.
 4. Avaliar novas fontes somente com gate: Betfair Exchange API, Sportmonks, Opta/Stats Perform ou scraping controlado.
 5. Automatizar execucao no Windows com o Agendador de Tarefas depois que o fluxo manual estiver validado.
@@ -602,11 +640,11 @@ Durante a Copa:
 
 - atualizar pela manha;
 - atualizar algumas horas antes dos jogos;
-- revisar palpites finais manualmente.
+- garantir uma execucao antes da janela de 3 horas para congelar previsoes pre-jogo;
+- acompanhar a evolucao das previsoes e resultados.
 
 Antes de enviar o bolao:
 
 1. Rodar `python -m src.atualizar_tudo`.
 2. Revisar `palpites_bolao`.
-3. Ajustar manualmente jogos suspeitos.
-4. Registrar o palpite final.
+3. Usar a previsao atual como referencia para decisao manual externa ao fluxo automatizado.
