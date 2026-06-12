@@ -92,29 +92,27 @@ Este fluxo pode ser iniciado por uma das duas hipoteses abaixo.
    A atualizacao do `ROADMAP.md` deve seguir este formato minimo:
 
    - **Status do item:** marcar como concluido.
-   - **Resumo da execucao:** registrar em 1 ou 2 frases o que foi implementado.
-   - **Proximo item:** indicar qual sera o proximo item de execucao previsto.
+   - **Log da execucao:** atualizar o arquivo correspondente em `logs/`.
+   - **Proxima Tarefa:** atualizar a secao `## Proxima Tarefa` com o proximo item executavel, considerando ordem, dependencias, bloqueios e estado atual do roadmap.
 
 
 ## ROADMAP.md Como Estado da Obra
 
-O `ROADMAP.md` e a fonte de verdade da execucao do projeto.
+O `ROADMAP.md` e a fonte de verdade do planejamento e da execucao do projeto. Ele funciona como painel de controle operacional.
 
-Ele deve representar o estado da obra: onde o projeto parou, o que ja foi concluido, o que esta pendente, o que esta bloqueado e qual e o proximo item de execucao.
+Ele define o plano mestre, a proxima tarefa executavel, a lista de tarefas, o status de cada item e as referencias para detalhamento e logs.
 
-Regras:
+O agente deve ler e respeitar a secao `## Instrucoes de Uso` do `ROADMAP.md`, pois ela define a estrutura, os campos obrigatorios, os status permitidos e as regras de preenchimento do roadmap.
 
-- Toda tarefa planejada ate a conclusao do projeto deve estar representada no `ROADMAP.md`.
-- Se o usuario pedir algo que ainda nao esta previsto no `ROADMAP.md`, registre primeiro como novo item de execucao no roadmap.
-- Posicione novos itens em ordem logica, considerando dependencias, prioridade e estado atual da obra.
-- Nao use o `ROADMAP.md` como log completo de terminal, historico repetitivo ou registro longo de detalhes operacionais.
-- Atualize o `ROADMAP.md` somente nos momentos definidos no fluxo de trabalho.
+O `ROADMAP.md` nao deve ser usado como log detalhado de execucao.
 
 ## Documento de Log da Execucao
 
-Use `docs/VALIDACOES.md` como documento de log da execucao.
+Use os arquivos em `logs/` como documento de log da execucao por tarefa.
 
-Ele deve registrar detalhes que nao devem sobrecarregar o `ROADMAP.md`, como:
+Enquanto a migracao para `logs/` nao estiver completa, preserve `docs/VALIDACOES.md` como historico legado de validacoes ja registradas.
+
+O log deve registrar detalhes que nao devem sobrecarregar o `ROADMAP.md`, como:
 
 - comandos executados;
 - validacoes realizadas;
@@ -125,7 +123,7 @@ Ele deve registrar detalhes que nao devem sobrecarregar o `ROADMAP.md`, como:
 - execucoes autorizadas;
 - erros encontrados e correcoes aplicadas.
 
-O `ROADMAP.md` deve conter o resumo e, quando necessario, apontar para a secao correspondente em `docs/VALIDACOES.md`.
+O `ROADMAP.md` deve conter o resumo e, quando necessario, apontar para o arquivo correspondente em `logs/` ou para a secao legada correspondente em `docs/VALIDACOES.md`.
 
 ## Ambiente
 
