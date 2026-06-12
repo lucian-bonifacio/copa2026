@@ -12,36 +12,34 @@ Antes de qualquer alteracao no projeto, o agente deve:
 2. Ler o `README.md`.
 3. Ler o `ROADMAP.md` para saber onde o projeto parou, qual e o proximo passo previsto e quais etapas devem orientar a continuidade do trabalho.
 
-## ROADMAP.md Como Estado da Obra
+## Regras Obrigatorias
 
-O `ROADMAP.md` e a fonte de verdade da execucao do projeto.
+Estas regras acionam gate de excecao. Se a implementacao exigir descumprir qualquer uma delas, o agente deve parar imediatamente e pedir autorizacao expressa do usuario antes de continuar.
 
-Ele deve representar o estado da obra: onde o projeto parou, o que ja foi concluido, o que esta pendente, o que esta bloqueado e qual e o proximo item de execucao.
+- Respeite o ambiente virtual `.venv`.
+- Nao modifique, nao formate, nao mova e nao leia arquivos de segredo, como `.env` e `service_account.json`, salvo se o usuario pedir explicitamente.
+- Nao exponha, imprima, copie para logs ou versione segredos, tokens, chaves de API ou credenciais.
+- Nao execute comando destrutivo ou de limpeza, como `git reset`, `git clean`, exclusao recursiva, limpeza de volumes ou remocao em massa, sem autorizacao explicita.
+- Nao apague CSVs, historicos, arquivos gerados ou abas da planilha sem autorizacao explicita do usuario.
+- Nao faca chamada externa com custo, API paga ou consumo relevante de creditos sem que isso esteja previsto no plano aprovado.
+- Nao altere Google Sheets fora das abas, intervalos ou comportamento previstos no plano aprovado.
+- Nao avance para o proximo item do `ROADMAP.md` sem homologacao pratica do usuario.
+- Nao saia do plano aprovado sem abrir novo gate quando a mudanca envolver acao sensivel ou alterar o comportamento combinado.
 
-Regras:
 
-- Toda tarefa planejada ate a conclusao do projeto deve estar representada no `ROADMAP.md`.
-- Se o usuario pedir algo que ainda nao esta previsto no `ROADMAP.md`, registre primeiro como novo item de execucao no roadmap.
-- Posicione novos itens em ordem logica, considerando dependencias, prioridade e estado atual da obra.
-- Nao use o `ROADMAP.md` como log completo de terminal, historico repetitivo ou registro longo de detalhes operacionais.
-- Atualize o `ROADMAP.md` somente nos momentos definidos no fluxo de trabalho.
+## Boas Praticas
 
-## Documento de Log da Execucao
+Estas praticas orientam a execucao normal, a manutencao e a qualidade do trabalho. 
 
-Use `docs/VALIDACOES.md` como documento de log da execucao.
+- Verifique o estado do Git com `git status --short` antes de qualquer alteracao.
+- Entenda o contexto e o fluxo afetado antes de alterar scripts, regras de negocio, planilhas ou arquivos gerados.
+- Rode validacoes compativeis com a mudanca feita antes de finalizar a implementacao.
+- Durante uma implementacao ja autorizada, execute com autonomia o que estiver dentro do plano aprovado.
+- Prefira mudancas pequenas, claras e testaveis.
+- Preserve a estrutura modular existente e implemente logica nova dentro de `src/` quando aplicavel.
+- Atualize a documentacao correspondente quando alterar comportamento, regras de negocio, odds, previsoes, historico, congelamento ou metricas.
+- Mantenha o `ROADMAP.md` como resumo do estado da obra e use `docs/VALIDACOES.md` para detalhes de execucao.
 
-Ele deve registrar detalhes que nao devem sobrecarregar o `ROADMAP.md`, como:
-
-- comandos executados;
-- validacoes realizadas;
-- resultados locais;
-- decisoes relevantes;
-- observacoes tecnicas;
-- consumo de creditos de API;
-- execucoes autorizadas;
-- erros encontrados e correcoes aplicadas.
-
-O `ROADMAP.md` deve conter o resumo e, quando necessario, apontar para a secao correspondente em `docs/VALIDACOES.md`.
 
 ## Fluxo de Trabalho
 
@@ -99,37 +97,37 @@ Este fluxo pode ser iniciado por uma das duas hipoteses abaixo.
    - **Resumo da execucao:** registrar em 1 ou 2 frases o que foi implementado.
    - **Proximo item:** indicar qual sera o proximo item de execucao previsto.
 
-## Regras Obrigatorias
 
-- Respeite o ambiente virtual `.venv`.
-- Nao modifique, nao formate, nao mova e nao leia arquivos de segredo, como `.env` e `service_account.json`, salvo se o usuario pedir explicitamente.
-- Nao exponha, imprima, copie para logs ou versione segredos, tokens, chaves de API ou credenciais.
-- Prefira mudancas pequenas, claras e testaveis.
-- Nao apague CSVs, historicos, arquivos gerados ou abas da planilha sem autorizacao explicita do usuario.
-- Verifique o estado do Git com `git status --short` antes de qualquer alteracao.
-- Entenda o contexto e o fluxo afetado antes de alterar scripts, regras de negocio, planilhas ou arquivos gerados.
-- Rode validacoes compativeis com a mudanca feita antes de finalizar a implementacao.
-- Nao avance para o proximo item do `ROADMAP.md` sem homologacao pratica do usuario.
+## ROADMAP.md Como Estado da Obra
 
-## Gates de Aprovacao
+O `ROADMAP.md` e a fonte de verdade da execucao do projeto.
 
-Os gates principais do projeto sao:
+Ele deve representar o estado da obra: onde o projeto parou, o que ja foi concluido, o que esta pendente, o que esta bloqueado e qual e o proximo item de execucao.
 
-1. **Gate do plano:** antes de qualquer implementacao, conforme o item 2 do Fluxo de Trabalho.
-2. **Gate de excecao:** durante a execucao, se for necessario descumprir uma Regra Obrigatoria ou sair do plano aprovado.
-3. **Gate de homologacao:** ao final da implementacao, antes de marcar o item como concluido no `ROADMAP.md`.
-4. **Gate de revalidacao:** quando houver erro, duvida ou ajuste solicitado pelo usuario.
+Regras:
 
-Durante uma implementacao ja autorizada, o agente deve executar com autonomia o que estiver dentro do plano aprovado.
+- Toda tarefa planejada ate a conclusao do projeto deve estar representada no `ROADMAP.md`.
+- Se o usuario pedir algo que ainda nao esta previsto no `ROADMAP.md`, registre primeiro como novo item de execucao no roadmap.
+- Posicione novos itens em ordem logica, considerando dependencias, prioridade e estado atual da obra.
+- Nao use o `ROADMAP.md` como log completo de terminal, historico repetitivo ou registro longo de detalhes operacionais.
+- Atualize o `ROADMAP.md` somente nos momentos definidos no fluxo de trabalho.
 
-Abra novo gate durante a execucao somente quando surgir uma acao sensivel nao prevista no plano aprovado, como:
+## Documento de Log da Execucao
 
-- comando destrutivo ou de limpeza, como `git reset`, `git clean`, exclusao recursiva, limpeza de volumes ou remocao em massa;
-- exclusao de CSVs, historicos, arquivos gerados ou abas da planilha;
-- alteracao em credenciais, segredos, `.env` ou `service_account.json`;
-- chamada externa com custo, API paga ou consumo relevante de creditos nao previsto no plano aprovado;
-- alteracao no Google Sheets fora das abas, intervalos ou comportamento previstos no plano aprovado;
-- mudanca de regra de negocio, criterio de previsao, congelamento de previsoes ou avaliacao de desempenho fora do que foi aprovado.
+Use `docs/VALIDACOES.md` como documento de log da execucao.
+
+Ele deve registrar detalhes que nao devem sobrecarregar o `ROADMAP.md`, como:
+
+- comandos executados;
+- validacoes realizadas;
+- resultados locais;
+- decisoes relevantes;
+- observacoes tecnicas;
+- consumo de creditos de API;
+- execucoes autorizadas;
+- erros encontrados e correcoes aplicadas.
+
+O `ROADMAP.md` deve conter o resumo e, quando necessario, apontar para a secao correspondente em `docs/VALIDACOES.md`.
 
 ## Ambiente
 
