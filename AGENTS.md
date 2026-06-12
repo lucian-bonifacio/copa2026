@@ -4,9 +4,7 @@ Instrucoes para agentes e assistentes que forem trabalhar neste repositorio.
 
 Este arquivo define o modo de trabalho do agente neste projeto. Ele deve ser tratado como a regra operacional principal para decidir o que ler, quando planejar, quando implementar, quando parar e como atualizar a documentacao.
 
-## Antes de Fazer Qualquer Alteracao
-
-Antes de qualquer alteracao no projeto, o agente deve:
+Ao iniciar trabalho neste repositorio pela primeira vez na sessao, o agente deve:
 
 1. Ler este `AGENTS.md` inteiro.
 2. Ler o `README.md`.
